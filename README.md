@@ -1,6 +1,6 @@
 ## installation
 add as git submodule
-`git submodule add git@github.com:martinsbalodis/kohana-crud.git modules/crud`
+`git submodule add git://github.com/martinsbalodis/kohana-crud.git modules/crud`
 add module in bootstrap
 `'crud'  		=> MODPATH.'crud',		 // crud controller`
 

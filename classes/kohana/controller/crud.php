@@ -125,15 +125,12 @@ abstract class Kohana_Controller_CRUD extends Controller {
 	
 	/**
 	 * Creates new model
-	 * @param type $model
+	 * @param ORM $model
 	 * @param type $values 
 	 */
 	protected function crud_create($model, $values) {
 		
-		// set values for model
-		foreach($values as $key=> $value) {
-			$model->{$key} = $value;
-		}
+		$model->values($values);
 		
 		// save model
 		$model->save();
@@ -155,10 +152,7 @@ abstract class Kohana_Controller_CRUD extends Controller {
 	 */
 	protected function crud_update($model, $values) {
 		
-		// set values for model
-		foreach($values as $key=> $value) {
-			$model->{$key} = $value;
-		}
+		$model->values($values);
 		
 		// save model
 		$model->update();

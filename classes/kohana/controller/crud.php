@@ -189,6 +189,18 @@ abstract class Kohana_Controller_CRUD extends Controller {
 	 */
 	protected function crud_collection($model) {
 		
+		// data filtering.
+		// This also could be done with orm::__construct, but orm::__construct
+		// does not check whether a column exists for filtering.
+		$params = $this->request->query();
+		$model_columns = $model->table_columns();
+		foreach ($params as $column => $value) {
+			if(array_key_exists($column, $model_columns)) {
+				// Passing an array of column => values
+				$model->where($column, '=', $value);
+			}
+		}
+		
 		$items = $model->find_all();
 		
 		// return found models

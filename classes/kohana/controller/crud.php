@@ -103,7 +103,7 @@ abstract class Kohana_Controller_CRUD extends Controller {
 	protected function crud_response($model) {
 		
 		// model is an iterator of objects
-		if($model instanceof Database_Result) {
+		if($model instanceof Database_Result || is_array($model)) {
 			
 			$object = array();
 			

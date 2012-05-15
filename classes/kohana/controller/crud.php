@@ -38,8 +38,23 @@ abstract class Kohana_Controller_CRUD extends Controller {
 	 */
 	public function action_crud() {
 		
+		$model = $this->crud_execute();
+		
+		$data = $this->crud_response($model);
+		$this->response->body(json_encode($data));
+	}
+	
+	/**
+	 * Handles crud request
+	 * Extend this method to catch errors for later usage.
+	 * 
+	 * @return type
+	 * @throws Kohana_Exception 
+	 */
+	protected function crud_execute() {
+		
 		$values = $this->crud_get_input();
-		$id = $this->crud_get_id($values);
+		$id = $this->crud_get_id();
 		$model = $this->get_model($id);
 		
 		switch ($this->request->method()) {
@@ -68,66 +83,62 @@ abstract class Kohana_Controller_CRUD extends Controller {
 				break;
 		}
 		
+		return $model;
 		
-		$this->crud_response($model);
 	}
 	
 	/**
 	 * Gets requested elements id.
 	 * @return integer | null 
 	 */
-	protected function crud_get_id(&$values) {
-		
-		// If updating model then id is sent via json
-		if($this->request->method() === "PUT") {
-			
-			// models primary key must be sent
-			if(!isset($values["id"])) {
-
-				throw new Kohana_Exception("no model to load for updating");
-			}
-
-			$id = $values["id"];
-			// remove id from values as it is not needed to set it again
-			unset($values["id"]);
-			return $id;
-		}
+	protected function crud_get_id() {
 		
 		return $this->request->param("id");
 	}
 	
 	/**
-	 * Crud response to caller
-	 * @param ORM $model 
+	 * Prepare response with array of objects
+	 * Override this method to add additional response data
+	 * 
+	 * @param Iterator | array $model 
+	 * @return array
+	 */
+	protected function crud_response_collection($model) {
+		
+		$data = array();
+			
+		foreach($model as $row) {
+
+			if(method_exists($row, 'as_array')) {
+				$data[] = $row->as_array();
+			}
+			else {
+				$data[] = $row;
+			}
+
+		}
+		
+		return $data;
+	}
+	
+	
+	/**
+	 * Prepare response object
+	 * Override this method to add additional response data
+	 * 
+	 * @param ORM $model
+	 * @return array
 	 */
 	protected function crud_response($model) {
 		
-		// model is an iterator of objects
-		if($model instanceof Iterator || is_array($model)) {
-			
-			$object = array();
-			
-			foreach($model as $row) {
-				
-				if(method_exists($row, 'as_array')) {
-					$object[] = $row->as_array();
-				}
-				else {
-					$object[] = $row;
-				}
-				
-			}
-			
-			// return array of models
-			$this->response->body(json_encode($object));
-			
+		if(method_exists($model, 'as_array')) {
+			$data = $model->as_array();
 		}
 		else {
-			
-			// return changed model
-			$this->response->body(json_encode($model->as_array()));
+			$data = $model;
 		}
 		
+		return $data;
 	}
 	
 	/**
@@ -211,7 +222,8 @@ abstract class Kohana_Controller_CRUD extends Controller {
 		$items = $model->find_all();
 		
 		// return found models
-		$this->crud_response($items);
+		$data = $this->crud_response_collection($items);
+		$this->response->body(json_encode($data));
 		
 	}
 	
